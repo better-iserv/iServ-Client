@@ -4,7 +4,7 @@ With the inofficial iServ Client for Windows you can connect to your school's [i
 ## Features:
 * Login and Main Menu
 * Switch quick between different servers and profiles
-* Darkmode (coming soon)
+* Darkmode (coming very soon)
 * Windows Tray icon
 * Windows Thumbbar buttons
 * integrated Updater
