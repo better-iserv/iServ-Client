@@ -1,0 +1,8 @@
+<li>Darkmode</li>
+<li>Einstellungsmenü</li>
+<li>UI verbessert (hover effect)</li>
+<li>verbesserungen am Updater</li>
+<li>weitere Fehlerbehbungen</li>
+
+
+
