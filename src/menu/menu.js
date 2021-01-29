@@ -30,6 +30,20 @@ try
 server.innerHTML = "<b>" + domain_ + "</b>";
 image.src = "https://" + domain_ + "/iserv/logo/logo.png"
 
+
+
+let theme = fs.readFileSync(remote.app.getPath('userData') + '\\current.theme', 'utf8')
+if(theme === "0")
+{
+    if(Math.floor(Math.random() * 3) < 1) tipp.innerHTML = "<strong>Tipp: </strong> Du kannst das Design von iServ in den Einstellungen ändern."
+} 
+else if(theme === "1")
+{
+    tipp.innerHTML = ""
+} 
+
+
+
 contin.addEventListener('click', () => { 
 
     fs.writeFile(remote.app.getPath('userData') + '\\menu.showed', "menu showed => continue", function (err) {
@@ -44,7 +58,7 @@ contin.addEventListener('click', () => {
 
 settings.addEventListener('click', () => { 
 
-    win.loadFile(__dirname  + "/settings/settings.html")
+    win.loadFile(__dirname  + "/settings.html")
 
 });
 

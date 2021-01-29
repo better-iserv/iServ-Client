@@ -3,10 +3,10 @@ const {app} = require("electron").remote
 const fs = require('fs');
 const request = require('request');
 const progress = require('request-progress'); 
-var exec = require('child_process').execFile;
+const { exec } = require('child_process');
 const _7z = require('7zip-min');
 let ver = ""
-const updateurl = 'https://polkabeine.de/spielwiese/emil/iserv-client/' 
+const updateurl = 'https://github.com/better-iServ/iServ-Client/blob/main/updates/' 
 
 try 
 {
@@ -24,6 +24,8 @@ document.getElementById("header").innerHTML = "<b>Download wird gestartet...</b>
 per.innerHTML = ""
 obj.innerHTML = ""
 
+console.log(remote.app.getPath("temp"))
+
 var download = function(uri, filename){
   progress(request(uri), {
     // throttle: 2000,                    // Throttle the progress event to 2000ms, defaults to 1000ms
@@ -31,6 +33,7 @@ var download = function(uri, filename){
     // lengthHeader: 'x-transfer-length'  // Length header to use, defaults to content-length
   })
   .on('progress', function (state) {
+    document.getElementById("header").innerHTML = "<b>Update wird heruntergeladen...</b>"
     if (Math.round(state.time.remaining) > 60)
     {
       remaining =  "Verbleibend: ca. " + Math.round(state.time.remaining / 60) + "  Minuten"
@@ -79,7 +82,7 @@ var download = function(uri, filename){
 };
 
 
-download(updateurl + "iServ-Client-Setup-"+ ver + ".7z", remote.app.getPath("downloads") + '\\iServ-Client-Setup-' + ver + ".iserv-client-update")
+download(updateurl + "iServ-Client-Update-"+ ver + ".exe?raw=true", remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".update")
 
 
 function afterDwnld()
@@ -89,28 +92,32 @@ function afterDwnld()
   obj.innerHTML = ""
   document.getElementById("header").innerHTML = "<b>Download abgeschlossen!</b>"
   const finishDownload = new Notification('Download abgeschlossen!', {
-    body: 'Das iServ-Client Update v' + ver + " wurde erfolgreich heruntergeladen!",
-    icon: process.cwd() + "\\src\\iserv_logo.png"
+    body: 'Das iServ-Client Update ' + ver + " wurde erfolgreich heruntergeladen! Der Installer wird gestartet..."
+    //icon: remote.app.getPath("exe") + "\\resources\\app.asar\\src\\iserv_logo.png"
   })
-  fs.renameSync(remote.app.getPath("downloads") + '\\iServ-Client-Setup-' + ver + ".iserv-client-update", remote.app.getPath("downloads") + '\\iServ-Client-Setup-' + ver + ".7z", function(err){
-    console.log(err)
-    document.getElementById("header").innerHTML = "<b>Es ist ein Fehler aufgetreten!</b>"
-    alert("Es ist ein Fehler aufgetreten!")
-  })
- 
-  _7z.unpack(remote.app.getPath("downloads") + '\\iServ-Client-Setup-' + ver + ".7z", remote.app.getPath("downloads"), function(err){
-    console.log(err)
-    exec(remote.app.getPath("downloads") + '\\iServ-Client Setup 1.2.0.exe', function(err, data) {  
-      console.log(err)
-      console.log(data.toString()); 
-      fs.unlinkSync(remote.app.getPath("downloads") + '\\iServ-Client-Setup-' + ver + ".7z", function(err){
-        console.log(err)
-      })
-      
-                              
-    });
-    app.exit() 
-
+  fs.writeFileSync(remote.app.getPath('userData') + '\\updated', ver, function (err) {
+    if (err) return console.log(err); 
   });
+  fs.renameSync(remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".update",remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".exe", function (err) {
+    if (err) return console.log(err); 
+  });
+  exec("START " + remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".exe", (error, stdout, stderr) => {
+    if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+    }
+    console.log(`stdout: ${stdout}`);
+    app.exit()
+  });
+
+
+
+
+
+
 }
 

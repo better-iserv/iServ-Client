@@ -2,6 +2,7 @@ const { app, BrowserWindow, Notification, BrowserView, Menu, Tray, session, nati
 const fs = require('fs');
 const { chrome } = require('process');
 const request = require('request');
+const _7z = require('7zip-min');
 
 
 let domain = ""
@@ -9,14 +10,21 @@ firstUse = true
 menuShowed = false;
 let icon = __dirname + "/iserv_logo.png"
 
+function log(msg)
+{
+  var timestamp = Date.now(),
+  date = new Date(timestamp)
+  fs.appendFile(app.getPath("userData") + "\\app.log", `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} | ${msg} \n`, function (err) {
+    if (err) throw err;
+  });
+}
 
 
-const updateurl = 'https://polkabeine.de/spielwiese/emil/iserv-client/'
+
+const updateurl = 'https://raw.githubusercontent.com/better-iServ/iServ-Client/main/updates/'
 
 var download = function(uri, filename, callback){
   request.head(uri, function(err, res, body){
-    console.log('content-type:', res.headers['content-type']);
-    console.log('content-length:', res.headers['content-length']);
 
     request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
   
@@ -43,7 +51,7 @@ function checkUpdates()
 
   request(updateurl, function (error, response, body) {
         
-    if (!error && response.statusCode == 403) 
+    if (!error && response.statusCode == 400) 
     {
         download(updateurl + "updateVersion.txt", app.getPath('userData') + '\\updateVersion.txt', function(){
   
@@ -53,8 +61,6 @@ function checkUpdates()
             const updateVersion = fs.readFileSync(app.getPath('userData') + '\\updateVersion.txt', 'utf8')
             let updateCompare = updateVersion.split(".")
             let versionCompare = app.getVersion().split(".")
-            console.log("updateVersion:" + updateCompare.join(""))
-            console.log("currentVersion:" + versionCompare.join(""))
             if (parseInt(updateCompare.join(""), 10) > parseInt(versionCompare.join(""), 10))
             {
               try 
@@ -124,7 +130,27 @@ function splash()
 
 function start()
 {
-  
+  fs.access(app.getPath('userData') + "\\ext", error => {
+    if (!error) {
+      console.log("external already installed")
+    } 
+    else {
+      download("https://github.com/better-iServ/iServ-Client/blob/main/ext/ext.7z?raw=true", app.getPath('userData') + "\\ext.7z", function(){
+        _7z.unpack(app.getPath('userData') + "\\ext.7z", app.getPath("userData"), function(err){
+          console.log("Downloaded themes")
+          fs.unlinkSync(app.getPath('userData') + '\\ext.7z');
+        });
+      });
+    }
+  });
+
+
+  if (!fs.existsSync(app.getPath('userData') + "\\current.theme")) {
+    fs.writeFile(app.getPath('userData') + '\\current.theme', "0", function (err) {
+      if (err) return console.log(err);
+    });
+  }
+ 
   try {
     fs.unlinkSync(app.getPath('userData') + '\\updateVersion.txt');
     fs.unlinkSync(app.getPath('userData') + '\\updateDescription.txt');
@@ -195,7 +221,8 @@ function menu()
     autoHideMenuBar: true,
     webPreferences: { 
       enableRemoteModule: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      webSecurity: false
     },
     icon: icon
   });
@@ -230,22 +257,26 @@ function update()
 }
 
 function runApp () { 
-  const theme = fs.readFileSync(app.getPath('userData') + '\\theme', 'utf8')
+  const theme = fs.readFileSync(app.getPath('userData') + '\\current.theme', 'utf8')
   if(theme === undefined)
   {
     console.log("default theme activated");
+    
   } 
   else if(theme === "0")
   {
     console.log("default theme activated");
+
   } 
   else if(theme === "1")
   {
-    session.defaultSession.loadExtension(app.getPath('userData') + "\\darkmode");
+    session.defaultSession.loadExtension(app.getPath('userData') + "\\ext\\themes\\dark");
+
   } 
   else if(theme === "2")
   {
-    session.defaultSession.loadExtension(app.getPath('userData') + "\\darkmode");
+    session.defaultSession.loadExtension(app.getPath('userData') + "\\ext\\themes\\dark");
+
   } 
 
   let win_icon = app.getPath('userData') + "\\schul_logo.png"
@@ -285,6 +316,8 @@ function runApp () {
   win.webContents.on('did-fail-load', () => {alert("Es ist ein Fehler aufgetreten!")});
   win.webContents.on('did-stop-loading', () => {splashWin.close()});
   win.webContents.on('did-start-loading', () => {splash()});
+
+
 
 
 

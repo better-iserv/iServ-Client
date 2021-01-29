@@ -4,7 +4,7 @@ const fs = require('fs');
 let ver = "" 
 let notes = ""
 let downloaded = false;
-const updateurl = 'https://polkabeine.de/spielwiese/emil/iserv-client/' 
+
 let icon = __dirname + "/updater_logo.png" 
 
 
