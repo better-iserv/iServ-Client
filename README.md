@@ -13,4 +13,4 @@ Coded by: [emmel](http://instagram.com/emmel.official)
 * integrated Updater
 * chromium based
 ## Download:
-Download Installer for Windows: [iServ-Client-Setup.exe (600MB)](http://iserv-client.tk)
+Download Installer for Windows: [iServ-Client-Setup.exe](https://github.com/better-iServ/iServ-Client/blob/main/installer/iServ-Client-Setup-1.1.0.exe?raw=true)
