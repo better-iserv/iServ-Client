@@ -12,6 +12,8 @@ Coded by: [emmel](http://instagram.com/emmel.official)
 * Windows Thumbbar buttons
 * integrated Updater
 * chromium based
+## Screenshots:
+![Main](https://github.com/better-iServ/iServ-Client/blob/main/screenshot/1.png?raw=true)
 ## Download:
 Download Installer for Windows: [iServ-Client 1.1.0](https://github.com/better-iServ/iServ-Client/releases/tag/1.1.0/)
 
