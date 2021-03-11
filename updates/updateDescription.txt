@@ -1,5 +1,9 @@
-<li>TESTUPDATE</li>
-<li>NICHT INSTALLIEREN</li>
+<li>Neues LogIn verfahren</li>
+<li>3 neue Designs</li>
+<li>verbesserter Darkmode</li>
+<li>verbessertes Aufgabenmodul (neuer Button)</li>
+<li>Discord Rich Presence (Beta)</li>
+
 
 
 
