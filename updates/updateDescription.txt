@@ -3,6 +3,7 @@
 <li>verbesserter Darkmode</li>
 <li>verbessertes Aufgabenmodul (neuer Button)</li>
 <li>Discord Rich Presence (Beta)</li>
+<li>und weitere Bugfixes</li>
 
 
 
