@@ -1,4 +1,4 @@
-# iServ Client 1.1.0
+# iServ Client 1.2.0
 ## Description:
 With the inofficial iServ Client for Windows you can connect to your school's [iServ](http://iserv.de) server.
 
@@ -13,7 +13,7 @@ Coded by: [emmel](http://instagram.com/emmel.official)
 * integrated Updater
 * chromium based
 ## Download:
-Download Installer for Windows: [iServ-Client 1.1.0](https://github.com/better-iServ/iServ-Client/releases/tag/1.1.0/)
+Download Installer for Windows: [iServ-Client 1.2.0](https://github.com/better-iServ/iServ-Client/releases/tag/1.2.0/)
 ## Screenshots:
 ![Main](https://github.com/better-iServ/iServ-Client/blob/main/screenshot/1.png?raw=true)
 
