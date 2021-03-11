@@ -11,6 +11,14 @@ var server = document.getElementById('server');
 var image = document.getElementById('image');
 var tipp = document.getElementById('tipp');
 
+function log(msg)
+{
+  var timestamp = Date.now(),
+  date = new Date(timestamp)
+  fs.appendFile(remote.app.getPath("userData") + "\\app.log", `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} | ${msg} \n`, function (err) {
+    if (err) throw err;
+  });
+}
 
 var win = remote.getCurrentWindow()
 var application = remote.app
@@ -35,7 +43,7 @@ image.src = "https://" + domain_ + "/iserv/logo/logo.png"
 let theme = fs.readFileSync(remote.app.getPath('userData') + '\\current.theme', 'utf8')
 if(theme === "0")
 {
-    if(Math.floor(Math.random() * 3) < 1) tipp.innerHTML = "<strong>Tipp: </strong> Du kannst das Design von iServ in den Einstellungen ändern."
+    if(Math.floor(Math.random() * 5) < 1) tipp.innerHTML = "<strong>Tipp: </strong> Du kannst das Design von iServ in den Einstellungen ändern."
 } 
 else if(theme === "1")
 {
@@ -46,6 +54,7 @@ else if(theme === "1")
 
 contin.addEventListener('click', () => { 
 
+    log("Menu: Continue with " + domain_)
     fs.writeFile(remote.app.getPath('userData') + '\\menu.showed', "menu showed => continue", function (err) {
         if (err) return console.log(err);
         finish()
@@ -63,7 +72,7 @@ settings.addEventListener('click', () => {
 });
 
 change.addEventListener('click', () => { 
-
+    log("Menu: Change account...")
     try {
         fs.unlinkSync(remote.app.getPath('userData') + '\\iserv.domain');
         console.log('successfully deleted pref file');
@@ -78,6 +87,7 @@ change.addEventListener('click', () => {
 
 function finish()
 {
+    log("#### MENU CLOSED => RELAUNCHING APP ####")
     application.relaunch()
     application.exit()
 }

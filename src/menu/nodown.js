@@ -4,15 +4,10 @@ const fs = require('fs');
 const request = require('request');
 const progress = require('request-progress'); 
 const { exec } = require('child_process');
+const extract = require('extract-zip');
 let ver = ""
-const updateurl = 'https://github.com/better-iServ/iServ-Client/blob/main/updates/' 
+const updateurl = 'https://github.com/better-iServ/iServ-Client/blob/main/ext/' 
 
-try 
-{
-    ver = fs.readFileSync(remote.app.getPath('userData') + '\\updateVersion.txt', 'utf8')
-
-
-} catch (err) {console.log(err)}
 
 var obj = document.getElementById('status');
 var per = document.getElementById('percent');
@@ -25,8 +20,6 @@ obj.innerHTML = ""
 
 var window = remote.getCurrentWindow()
 
-console.log(remote.app.getPath("temp"))
-
 var download = function(uri, filename){
   progress(request(uri), {
     // throttle: 2000,                    // Throttle the progress event to 2000ms, defaults to 1000ms
@@ -34,7 +27,7 @@ var download = function(uri, filename){
     // lengthHeader: 'x-transfer-length'  // Length header to use, defaults to content-length
   })
   .on('progress', function (state) {
-    document.getElementById("header").innerHTML = "<b>Update wird heruntergeladen...</b>"
+    document.getElementById("header").innerHTML = "<b>Pakete werden heruntergeladen...</b>"
     if (Math.round(state.time.remaining) > 60)
     {
       remaining =  "Verbleibend: ca. " + Math.round(state.time.remaining / 60) + "  Minuten"
@@ -84,42 +77,16 @@ var download = function(uri, filename){
 };
 
 
-download(updateurl + "iServ-Client-Update-"+ ver + ".exe?raw=true", remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".update")
-console.log(updateurl + "iServ-Client-Update-"+ ver + ".exe?raw=true")
+download(updateurl + "package.zip?raw=true", remote.app.getPath("userData") + '\\package.zip')
 
-function afterDwnld()
+async function afterDwnld()
 {
+  document.getElementById("header").innerHTML = "<b>Wird entpackt...</b>"
   console.log("downloaded new version")
   per.innerHTML = ""
   obj.innerHTML = ""
-  document.getElementById("header").innerHTML = "<b>Download abgeschlossen!</b>"
-  const finishDownload = new Notification('Download abgeschlossen!', {
-    body: 'Das iServ-Client Update ' + ver + " wurde erfolgreich heruntergeladen! Der Installer wird gestartet..."
-    //icon: remote.app.getPath("exe") + "\\resources\\app.asar\\src\\iserv_logo.png"
-  })
-  fs.writeFileSync(remote.app.getPath('userData') + '\\updated', ver, function (err) {
-    if (err) return console.log(err); 
-  });
-  fs.renameSync(remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".update",remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".exe", function (err) {
-    if (err) return console.log(err); 
-  });
-  exec("START " + remote.app.getPath("temp") + '\\iServ-Client-Update-' + ver + ".exe", (error, stdout, stderr) => {
-    if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-    console.log(`stdout: ${stdout}`);
-    app.exit()
-  });
 
-
-
-
-
-
+  const unpack = await extract(remote.app.getPath("userData") + '\\package.zip', {dir: app.getPath('userData')})
+  remote.app.relaunch()
+  remote.app.exit()
 }
-

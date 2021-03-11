@@ -1,7 +1,7 @@
 {
   "name": "iserv-client",
   "productName": "iServ-Client",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Ein inofizieller iServ-Desktop-Client für Windows.",
   "main": "src/index.js",
   "scripts": {
@@ -24,7 +24,7 @@
       "installerIcon": "src/Installer_icon.ico",
       "uninstallerIcon": "src/iserv_logo.ico",
       "uninstallDisplayName": "iServ-Client",
-      "oneClick": false,
+      "oneClick": true,
       "perMachine": true
     }
   },
@@ -62,10 +62,12 @@
     }
   },
   "dependencies": {
-    "7zip-min": "^1.2.1",
     "cli-progress": "^3.8.2",
     "decompress": "^4.2.1",
+    "discord-rich-presence": "0.0.8",
     "electron-squirrel-startup": "^1.0.0",
+    "extract-zip": "^2.0.1",
+    "open": "^8.0.2",
     "request": "^2.88.2",
     "request-progress": "^3.0.0",
     "update-electron-app": "^2.0.1"

@@ -1,20 +1,28 @@
-const { app, BrowserWindow, Notification, BrowserView, Menu, Tray, session, nativeTheme} = require('electron')
+const { app, BrowserWindow, Notification, BrowserView, Menu, Tray, session, nativeTheme, net, ClientRequest, chrome} = require('electron')
 const fs = require('fs');
-const { chrome } = require('process');
+//const { chrome } = require('process');
 const request = require('request');
-const _7z = require('7zip-min');
+const discord = require('discord-rich-presence')('815937133209583616');
+const open = require('open');
 
 
 let domain = ""
+let pass = ""
+let acc = ""
 firstUse = true
 menuShowed = false;
 let icon = __dirname + "/iserv_logo.png"
+
+let started = Date.now();
+let state = ""
+
+let dm = false;
 
 function log(msg)
 {
   var timestamp = Date.now(),
   date = new Date(timestamp)
-  fs.appendFile(app.getPath("userData") + "\\app.log", `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} | ${msg} \n`, function (err) {
+  fs.appendFileSync(app.getPath("userData") + "\\app.log", `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} | ${msg} \n`, function (err) {
     if (err) throw err;
   });
 }
@@ -37,7 +45,7 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 
 function checkUpdates()
 {
-  
+  log("Checking for updates...")
   try {
     fs.unlinkSync(app.getPath('userData') + '\\updateDescription.txt');
     fs.unlinkSync(app.getPath('userData') + '\\updateVersion.txt');
@@ -47,7 +55,25 @@ function checkUpdates()
     console.log("no des or ver file was found");
   }
 
-
+  fs.access(app.getPath('userData') + "\\updated", function (err) {
+    if (!err) {
+      if(!fs.access(app.getPath('userData') + "\\NotificationManager"))
+      {
+        console.log("package update required but no packages installed")
+      }
+      else
+      {
+        console.log("package update required")
+        fs.unlinkSync(app.getPath('userData') + "\\package.zip")
+        fs.unlinkSync(app.getPath('userData') + "\\updated")
+        fs.rmdirSync(app.getPath('userData') + "\\ext", { recursive: true });
+        fs.rmdirSync(app.getPath('userData') + "\\NotificationManager", { recursive: true });
+      }
+    } 
+    else {
+      console.log("no package update required")
+    }
+  });
 
   request(updateurl, function (error, response, body) {
         
@@ -73,13 +99,15 @@ function checkUpdates()
                   
                 } catch (err) {
                   console.log("Update later");
+                  log("configured to: Update later")
                 }
+                log("No Update required")
                 start()
 
               } 
               catch (err)
               {
-                console.log("update now")
+                log("Update rqeuired: Launching Update Window...")
                 update()
               }
               
@@ -124,32 +152,29 @@ function splash()
     transparent: true,
     alwaysOnTop: true
   });
-  splashWin.loadFile(__dirname + "/splash.html")
+  if(!dm)
+  {
+    splashWin.loadFile(__dirname + "/splash.html")  
+  }
+  else
+  {
+    splashWin.loadFile(__dirname + "/splashDarkmode.html")    
+  }
+
 
 }
 
 function start()
 {
-  fs.access(app.getPath('userData') + "\\ext", error => {
-    if (!error) {
-      console.log("external already installed")
-    } 
-    else {
-      download("https://github.com/better-iServ/iServ-Client/blob/main/ext/ext.7z?raw=true", app.getPath('userData') + "\\ext.7z", function(){
-        _7z.unpack(app.getPath('userData') + "\\ext.7z", app.getPath("userData"), function(err){
-          console.log("Downloaded themes")
-          fs.unlinkSync(app.getPath('userData') + '\\ext.7z');
-        });
-      });
-    }
-  });
-
+  log("Starting App...")
 
   if (!fs.existsSync(app.getPath('userData') + "\\current.theme")) {
     fs.writeFile(app.getPath('userData') + '\\current.theme', "0", function (err) {
       if (err) return console.log(err);
     });
   }
+
+
  
   try {
     fs.unlinkSync(app.getPath('userData') + '\\updateVersion.txt');
@@ -163,6 +188,8 @@ function start()
   try 
   {
     const data = fs.readFileSync(app.getPath('userData') + '\\iserv.domain', 'utf8')
+    acc = fs.readFileSync(app.getPath('userData') + '\\iserv.acc', 'utf8')
+    pass = fs.readFileSync(app.getPath('userData') + '\\iserv.pass', 'utf8')
     domain = data
     firstUse = false
     
@@ -182,16 +209,55 @@ function start()
 
 
     } catch (err) {
-      if(!menuShowed) menu()   
+      if(!menuShowed)
+      {
+        if (!fs.existsSync(app.getPath('userData') + "\\NotificationManager")) {
+          package()
+        }
+        else
+        {
+          menu() 
+        }
+      }   
     }
 
   } catch (err) {
-    if(firstUse) config()   
+    if(firstUse)
+    {
+      if (!fs.existsSync(app.getPath('userData') + "\\NotificationManager"))
+      {
+        package()
+      }
+      else
+      {
+        config()
+      }
+    }    
   }
+}
+
+function package()
+{
+
+  const loadingWin = new BrowserWindow({
+    width: 520,
+    height: 400,
+    autoHideMenuBar: true,
+    webPreferences: { 
+        enableRemoteModule: true,
+        nodeIntegration: true 
+    },
+    frame: false,
+    icon: icon
+  });
+  loadingWin.loadFile(__dirname + '/menu/nodown.html');
+  splashWin.close()
+
 }
 
 function config()
 {
+  log("Launching Cofiguration Window...")
   const confWin = new BrowserWindow({
     width: 450,
     height: 700,
@@ -214,7 +280,7 @@ function config()
 
 function menu()
 {
-  
+  log("Launching Menu Window...")
   const menWin = new BrowserWindow({
     width: 500,
     height: 800,
@@ -257,27 +323,42 @@ function update()
 }
 
 function runApp () { 
+  log("Launching Main...")
   const theme = fs.readFileSync(app.getPath('userData') + '\\current.theme', 'utf8')
   if(theme === undefined)
   {
     console.log("default theme activated");
+    dm = false;
     
   } 
   else if(theme === "0")
   {
     console.log("default theme activated");
+    dm = false;
 
   } 
   else if(theme === "1")
   {
     session.defaultSession.loadExtension(app.getPath('userData') + "\\ext\\themes\\dark");
-
+    dm = true
   } 
   else if(theme === "2")
   {
-    session.defaultSession.loadExtension(app.getPath('userData') + "\\ext\\themes\\dark");
+    session.defaultSession.loadExtension(app.getPath('userData') + "\\ext\\themes\\sithLord");
+    dm = true;
 
   } 
+  else if(theme === "3")
+  {
+    session.defaultSession.loadExtension(app.getPath('userData') + "\\ext\\themes\\deepOcean");
+
+  } 
+  else if(theme === "4")
+  {
+    session.defaultSession.loadExtension(app.getPath('userData') + "\\ext\\themes\\pinkForest");
+
+  } 
+
 
   let win_icon = app.getPath('userData') + "\\schul_logo.png"
 
@@ -299,29 +380,70 @@ function runApp () {
         webPreferences: {
           nodeIntegration: true
         },
-        menu: null,
+        menu: false
   });
-
-
-
 
   win.setMenu(null)
   win.setTitle(domain + " - iServClient")
   win.setBounds({ x: 0, y: 0, width: 1000, height: 600 })
-  win.loadURL('https://' + domain + '/iserv/')
+  win.loadURL('https://' + domain + '/iserv/app/login', {
+    postData: [{
+      type: 'rawData',
+      bytes: Buffer.from('_username=' + acc + '&_password=' + pass)
+    }],
+    extraHeaders: 'Content-Type: application/x-www-form-urlencoded'
+  })
+  log("Connecting to " + domain + "...")
+  log("Logging in as: " + acc)
+
   win.on('did-fail-load', function() {});
+  win.webContents.on('did-fail-load', () => {log("LOADING PROCESS FAILED")});
+  win.webContents.on('did-stop-loading', () => {
+    
+    win.webContents.executeJavaScript(`function buttonInsert(){var i=document.createElement("button"),n=document.createElement("p"),t=document.querySelector("#iserv_exercise_upload_submit"),d=document.querySelector("#iserv_exercise_upload > div:nth-child(1) > div > div > div > div.btn-toolbar > button"),o=document.querySelector("#iserv_exercise_upload > div:nth-child(1) > div > div > div > div.btn-toolbar > div.file-picker-container > button"),r=document.querySelector("#iserv_exercise_upload > div:nth-child(1) > div > div > div > div.btn-toolbar > div.file-universal-dropzone-hint");t.style.display="none",d.style.display="none",o.style.display="none",r.style.display="none",i.innerText="Im Browser Abgeben",i.className="btn btn-success",n.innerHTML="Leider ist das hochladen von Dateien im Aufgabenmodul mit dem iServ Client nicht möglich. Du kannst diese nur im Browser abgeben",document.querySelector("#iserv_exercise_upload > div:nth-child(4) > div").appendChild(n),document.querySelector("#iserv_exercise_upload > div:nth-child(4) > div").appendChild(i),i.addEventListener("click",()=>{console.log("BetterIservButtonClicked|" + window.location)})}buttonInsert();`)
 
+    let url = win.webContents.getURL()
+    if(url.includes("mail"))
+    {
+      state = "E-Mail"
+    }
+    else if(url.includes("exercise"))
+    {
+      state = "Aufgabenmodul"
+    }
+    else if(url.includes("file"))
+    {
+      state = "Dateien"
+    }
+    else if(url.includes("calendar"))
+    {
+      state = "Kalendar"
+    }
+    else
+    {
+      state = "Startseite"
+    }
+    
+    discord.updatePresence({
+      state: state,
+      startTimestamp: started,
+      largeImageKey: 'iserv_logo',
+      instance: true,
+    });
 
-
-  win.webContents.on('did-fail-load', () => {alert("Es ist ein Fehler aufgetreten!")});
-  win.webContents.on('did-stop-loading', () => {splashWin.close()});
+    splashWin.close()
+  });
   win.webContents.on('did-start-loading', () => {splash()});
 
 
+  win.webContents.on("console-message", (event, level, message) => {
+    if(message.includes("BetterIservButtonClicked"))
+    {
+      open(message.split("|")[1])
+    }
+  })
 
 
-
-  
 
   win.setThumbarButtons([
     {
@@ -394,7 +516,7 @@ function runApp () {
       win.show()
 
     }},
-    { label: 'Messager', click: function (event) {
+    { label: 'Messenger', click: function (event) {
       win.loadURL(mess)
       win.show()
 
@@ -415,9 +537,13 @@ function runApp () {
 }
 
 app.whenReady().then(() => {
+  log("#### APP STARTED ####")
   checkUpdates()
   splash()
 })
+
+app.on("before-quit", () => {log("#### QUITTING APP ####")})
+
 
 
 

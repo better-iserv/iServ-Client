@@ -1,9 +1,18 @@
-const { remote } = require('electron');
+const { remote, app } = require('electron');
 const fs = require('fs');
 request = require('request');
 
 console.log("Started Configuration Window") //CONSOLE LOG
 console.log("Current active path: " + remote.app.getPath("appData")) //CONSOLE LOG
+
+function log(msg)
+{
+  var timestamp = Date.now(),
+  date = new Date(timestamp)
+  fs.appendFileSync(remote.app.getPath("userData") + "\\app.log", `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} | ${msg} \n`, function (err) {
+    if (err) throw err;
+  });
+}
 
 var button = document.getElementById('button');
 var input = document.getElementById('input');
@@ -13,6 +22,13 @@ var header = document.getElementById('header');
 
 var win = remote.getCurrentWindow()
 var application = remote.app
+var password = true;
+
+if (fs.existsSync(application.getPath('userData') + "\\iserv.domain")) {
+    configFinished()
+}
+
+
 
 var download = function(uri, filename, callback){
     request.head(uri, function(err, res, body){
@@ -32,8 +48,8 @@ button.addEventListener('click', () => {
 
 function configFinished()
 {
-    application.relaunch()
-    application.exit()
+    win.loadFile(__dirname + '/pass.html');
+    log("Config: Domain and account saved to files. Launching password page...")
 }
 
 function enter()
@@ -43,10 +59,6 @@ function enter()
     {
         error.innerHTML = "Keine Angabe"
         return;
-    }
-    if (input.value === "#")
-    {
-        input.value = "@josephinum.net"
     }
     domain_file = input.value.split("@");
     if(domain_file[1] === undefined)
@@ -62,11 +74,7 @@ function enter()
         button.style.display = "none"
         input.style.display = "none"
     });
-
-    fs.writeFile(remote.app.getPath('userData') + '\\menu.showed', "menu showed => first use", function (err) {
-        if (err) return console.log(err);
-    });
-    fs.writeFile(remote.app.getPath('userData') + '\\update.later', "update later", function (err) {
+    fs.writeFile(remote.app.getPath('userData') + '\\iserv.acc', domain_file[0], function (err) {
         if (err) return console.log(err);
     });
     
@@ -78,6 +86,7 @@ function enter()
 
                 console.log('Downloaded Logo from http://' + domain_file[1] + '/iserv/logo/logo.png'); //CONSOLE LOG
                 configFinished();
+                log("Config: Connected to " + domain_file[1])
             }); 
         }
         else
@@ -90,12 +99,14 @@ function enter()
         
                         console.log('Downloaded Logo from https://' + domain_file[1] + '/iserv/logo/logo.png'); //CONSOLE LOG
                         configFinished();
+                        log("Config: Connected to " + domain_file[1])
                     }); 
                 }
                 else
                 {
                     win.loadFile(__dirname + '/error.html');
-                    console.error("Failed to connect to: " + domain_file[1]) //CONSOLE LOG
+                    log("Failed to connect to " + domain_file[1])
+                    console.error("Config: Failed to connect to: " + domain_file[1]) //CONSOLE LOG
                     
                 }
         
