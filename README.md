@@ -1,4 +1,4 @@
-# iServ Client 1.2.0
+# iServ Client 1.2.1
 ## Description:
 With the inofficial iServ Client for Windows you can connect to your school's [iServ](http://iserv.de) server.
 
