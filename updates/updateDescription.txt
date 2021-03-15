@@ -1,4 +1,4 @@
-<li>Themes swiching bugfix</li>
+<li>Themes swichting bugfix</li>
 
 
 
