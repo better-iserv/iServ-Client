@@ -1,4 +1,4 @@
-<li>Discord RPC einstellbar</li>
+<li>Themes swiching bugfix</li>
 
 
 
