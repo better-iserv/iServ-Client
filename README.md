@@ -2,7 +2,7 @@
 ## Description:
 With the inofficial iServ Client for Windows you can connect to your school's [iServ](http://iserv.de) server.
 
-Coded by: [emmel](http://instagram.com/emmel.official)
+
 ## Features:
 * Login and Main Menu
 * Switch quick between different servers and profiles
